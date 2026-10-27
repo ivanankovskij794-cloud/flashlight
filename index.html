@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Фонарик Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#07080c; --ink:#f3efe3; --dim:#7d8090; --glow:#ffd24a; --card:#12141c; --line:#2a2d38;
+  --display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;overflow:hidden;-webkit-tap-highlight-color:transparent}
+h1{font:800 clamp(22px,7vw,34px)/1.1 var(--display);margin:0;text-align:center;letter-spacing:-.02em}
+.sub{margin:0;color:var(--dim);font-size:15px;text-align:center;max-width:26ch}
+.btn{position:relative;width:min(62vw,260px);aspect-ratio:1;border-radius:50%;border:2px solid var(--line);background:radial-gradient(circle at 50% 35%,#1b1e28,#0d0f15);cursor:pointer;display:grid;place-items:center;color:var(--glow);transition:transform .15s,box-shadow .3s,border-color .3s}
+.btn:hover,.btn:focus-visible{border-color:var(--glow);box-shadow:0 0 60px 6px rgba(255,210,74,.18);outline:none}
+.btn:active{transform:scale(.95)}
+.btn svg{width:38%;height:38%}
+.btn::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px dashed var(--line)}
+.hint{font-size:13px;color:var(--dim)}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.sheet{width:min(100%,480px);max-height:100%;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;padding:22px 18px calc(18px + env(safe-area-inset-bottom,0px));animation:up .3s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet h2{font:800 20px/1.15 var(--display);margin:0 0 4px}
+.sheet p{margin:0 0 16px;color:var(--dim);font-size:14px}
+.plan{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);color:var(--ink);border:1.5px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;font:inherit;position:relative}
+.plan[aria-checked="true"]{border-color:var(--glow);background:#1a1810}
+.dot{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--line)}
+.plan[aria-checked="true"] .dot{border-color:var(--glow);background:radial-gradient(circle,var(--glow) 45%,transparent 50%)}
+.info{flex:1;min-width:0}
+.name{font:800 15px var(--display)}
+.desc{font-size:13px;color:var(--dim);margin-top:3px}
+.price{font:800 17px var(--display);white-space:nowrap}
+.tag{position:absolute;top:-9px;right:12px;background:var(--glow);color:#1b1500;font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px}
+.pay{display:block;text-align:center;text-decoration:none;width:100%;margin-top:6px;padding:16px;border:0;border-radius:14px;background:var(--glow);color:#1b1500;font:800 15px var(--display);cursor:pointer}
+.pay:active{transform:scale(.98)}
+.cancel{display:block;width:100%;margin-top:6px;padding:12px;border:0;background:none;color:var(--dim);font:inherit;text-decoration:underline;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1a1c25;color:var(--ink);padding:12px 18px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s;text-align:center;max-width:86vw;z-index:5}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}.btn{transition:none}}
+</style>
+</head>
+<body>
+<h1>Фонарик Premium</h1>
+<p class="sub">Свет по подписке. Темнота пока бесплатна.</p>
+<button class="btn" id="go" aria-label="Включить фонарик">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v9"/><path d="M6.3 5.6a8 8 0 1 0 11.4 0"/></svg>
+</button>
+<div class="hint">нажмите, чтобы включить</div>
+
+<div class="overlay" id="ov">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="st">
+    <h2 id="st">Выберите тариф</h2>
+    <p>Чтобы включить фонарик, нужна подписка.</p>
+    <div role="radiogroup" aria-label="Тарифы" id="plans">
+      <button class="plan" role="radio" aria-checked="false" data-price="199">
+        <span class="dot"></span>
+        <span class="info"><div class="name">Искорка</div><div class="desc">10 секунд света, с рекламой</div></span>
+        <span class="price">199 ₽</span>
+      </button>
+      <button class="plan" role="radio" aria-checked="false" data-price="499">
+        <span class="dot"></span>
+        <span class="info"><div class="name">Лучик</div><div class="desc">1 минута света, без мерцания</div></span>
+        <span class="price">499 ₽</span>
+      </button>
+      <button class="plan" role="radio" aria-checked="true" data-price="999">
+        <span class="tag">Выбор тёмных людей</span>
+        <span class="dot"></span>
+        <span class="info"><div class="name">Свет до рассвета</div><div class="desc">Горит, пока не сядет батарея</div></span>
+        <span class="price">999 ₽</span>
+      </button>
+    </div>
+    <a class="pay" id="pay" href="https://t.me/zewsssse" target="_blank" rel="noopener noreferrer">Оплатить 999 ₽</a>
+    <button class="cancel" id="no">Остаться в темноте</button>
+  </div>
+</div>
+<div class="toast" id="t"></div>
+
+<script>
+var ov=document.getElementById('ov'),t=document.getElementById('t'),pay=document.getElementById('pay'),timer;
+var plans=document.querySelectorAll('.plan'),price=999;
+function toast(m){t.textContent=m;t.classList.add('show');clearTimeout(timer);timer=setTimeout(function(){t.classList.remove('show')},2600)}
+plans.forEach(function(p){p.addEventListener('click',function(){
+  plans.forEach(function(x){x.setAttribute('aria-checked','false')});
+  p.setAttribute('aria-checked','true');
+  price=p.getAttribute('data-price');
+  pay.textContent='Оплатить '+price+' ₽';
+})});
+document.getElementById('go').addEventListener('click',function(){ov.classList.add('open')});
+document.getElementById('no').addEventListener('click',function(){ov.classList.remove('open');toast('Темнота бесплатна. Пока.')});
+pay.addEventListener('click',function(){toast('Переходим к оплате…')});
+</script>
+</body>
+</html>
